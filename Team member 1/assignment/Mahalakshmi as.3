@@ -1,0 +1,239 @@
+{
+  "metadata": {
+    "accelerator": "GPU",
+    "colab": {
+      "collapsed_sections": [],
+      "provenance": []
+    },
+    "kernelspec": {
+      "name": "python",
+      "display_name": "Python (Pyodide)",
+      "language": "python"
+    },
+    "language_info": {
+      "codemirror_mode": {
+        "name": "python",
+        "version": 3
+      },
+      "file_extension": ".py",
+      "mimetype": "text/x-python",
+      "name": "python",
+      "nbconvert_exporter": "python",
+      "pygments_lexer": "ipython3",
+      "version": "3.8"
+    },
+    "vscode": {
+      "interpreter": {
+        "hash": "e450050b432e843bda3c41bf3272c133bfc370a7003f3e377e27f87a49ce1127"
+      }
+    }
+  },
+  "nbformat_minor": 4,
+  "nbformat": 4,
+  "cells": [
+    {
+      "cell_type": "markdown",
+      "source": "#                                                                ASSIGNMENT 3",
+      "metadata": {
+        "id": "dIIfomtqEeR9"
+      }
+    },
+    {
+      "cell_type": "markdown",
+      "source": "# EXTRACTING ZIP FOLDER",
+      "metadata": {
+        "id": "dIIfomtqEeR9"
+      }
+    },
+    {
+      "cell_type": "code",
+      "source": "!unzip '/content/Flowers-Dataset.zip'",
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "dswnUMHzC8Fu",
+        "outputId": "90c8a6b6-091f-4cb7-8159-14c0a9eedf9d",
+        "trusted": true
+      },
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "markdown",
+      "source": "# IMAGE AUGMENTATION",
+      "metadata": {
+        "id": "z6f8dPROEsPb"
+      }
+    },
+    {
+      "cell_type": "code",
+      "source": "from tensorflow.keras.preprocessing.image import ImageDataGenerator",
+      "metadata": {
+        "id": "5pepkiFXBNHU",
+        "trusted": true
+      },
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "source": "flowers_datagram = ImageDataGenerator(rescale=1./255,\n                                    zoom_range=0.2,\n                                    horizontal_flip=True)",
+      "metadata": {
+        "id": "tTpfcxY3HM60",
+        "trusted": true
+      },
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "source": "flowers_datagram = ImageDataGenerator(rescale=1./255)",
+      "metadata": {
+        "id": "qgMqKT2DIiJ6",
+        "trusted": true
+      },
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "source": "xflowers = flowers_datagram.flow_from_directory('/content/flowers',\n                                                target_size=(64,64),\n                                                class_mode='categorical',\n                                                batch_size=100)",
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "N8DplnU2J6A1",
+        "outputId": "f7411275-9374-461b-f91f-e2f248f462f2",
+        "trusted": true
+      },
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "markdown",
+      "source": "# CREATE MODEL",
+      "metadata": {
+        "id": "MrTLGYPWK_92"
+      }
+    },
+    {
+      "cell_type": "code",
+      "source": "from tensorflow.keras.models import Sequential\nfrom tensorflow.keras.layers import Convolution2D,MaxPooling2D,Flatten,Dense",
+      "metadata": {
+        "id": "IYuXAsZLK_ex",
+        "trusted": true
+      },
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "markdown",
+      "source": "# ADD LAYERS",
+      "metadata": {
+        "id": "Q2a1TidfOJME"
+      }
+    },
+    {
+      "cell_type": "code",
+      "source": "model = Sequential()\nmodel.add(Convolution2D(32,(3,3),activation='relu',input_shape=(64,64,3)))\nmodel.add(MaxPooling2D(pool_size=(2,2)))\nmodel.add(Flatten())\nmodel.add(Dense(300,activation='relu')) # Hidden layer 1\nmodel.add(Dense(150,activation='relu')) # Hidden layer 2\nmodel.add(Dense(5,activation='softmax')) # Output layer",
+      "metadata": {
+        "id": "pwNSuiqFKBAy",
+        "trusted": true
+      },
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "markdown",
+      "source": "# COMPILE THE MODEL",
+      "metadata": {
+        "id": "bje_fi21Pc4d"
+      }
+    },
+    {
+      "cell_type": "code",
+      "source": "model.compile(optimizer='adam',loss='categorical_crossentropy',metrics=['accuracy'])",
+      "metadata": {
+        "id": "N8YzujjrPcd1",
+        "trusted": true
+      },
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "markdown",
+      "source": "# FIT THE MODEL",
+      "metadata": {
+        "id": "2mvHOrGfT-8l"
+      }
+    },
+    {
+      "cell_type": "code",
+      "source": "model.fit_generator(xflowers,\n                    steps_per_epoch=len(xflowers),\n                    epochs=20,\n                    validation_data=xflowers,\n                    validation_steps=len(xflowers),)",
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "WCu1nIbPQQBm",
+        "outputId": "a9623183-805f-4458-cd62-b88eeeca2142",
+        "trusted": true
+      },
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "markdown",
+      "source": "# SAVE MODEL",
+      "metadata": {
+        "id": "IPDDeyu5Vk5F"
+      }
+    },
+    {
+      "cell_type": "code",
+      "source": "model.save('flowers.h5')",
+      "metadata": {
+        "id": "CMvckBxxVkeq",
+        "trusted": true
+      },
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "markdown",
+      "source": "# TESTING MODEL",
+      "metadata": {
+        "id": "p98QyEGUWDnL"
+      }
+    },
+    {
+      "cell_type": "code",
+      "source": "from tensorflow.keras.preprocessing import image\nimg = image.load_img('/content/flowers/rose/8644003462_2272de26eb.jpg',target_size=(350,400))\nimg",
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/",
+          "height": 367
+        },
+        "id": "F1ITsp-aV1nc",
+        "outputId": "54098c1a-02f1-4496-8675-d6a53321ee2e",
+        "trusted": true
+      },
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "source": "from tensorflow.keras.preprocessing import image\nimg = image.load_img('/content/flowers/rose/8644003462_2272de26eb.jpg',target_size=(60,60))\nx = image.img_to_array(img)\nx",
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "URHgBWj0YKdq",
+        "outputId": "57e48569-9e4b-4a4b-9147-a73110fc2919",
+        "trusted": true
+      },
+      "execution_count": null,
+      "outputs": []
+    }
+  ]
+}
